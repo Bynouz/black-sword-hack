@@ -16,7 +16,7 @@ import SpellSheet from './modules/sheets/spell-sheet.js';
 import SpiritSheet from './modules/sheets/spirit-sheet.js';
 import WeaponSheet from './modules/sheets/weapon-sheet.js';
 import {logDamageRoll, toggleAttributeTestDisplay} from './modules/chat_messages.js';
-import {getBackgrounds, getOrigins} from './modules/origins.js';
+import {getBackgrounds, getOrigins, isCustomOriginsActive} from './modules/origins.js';
 import {capitalize, stringToKey} from './modules/shared.js';
 
 async function preloadHandlebarsTemplates() {
@@ -135,13 +135,20 @@ Hooks.once("init", function() {
             let options     =  [`<option value=""></option>`];
             options = options.concat(getBackgrounds(originId).map((background) => {
                 let selected = (background.key === selectedKey ? 'selected="selected"' : "");
-                let suffix   = [game.i18n.localize(`bsh.origins.${origin.id}.name`)];
+                let suffix   = [];
+                let name     = (background.localeKeys ? game.i18n.localize(background.localeKeys.label) : background.name);
+
+                if(isCustomOriginsActive()) {
+                    suffix.push(origin.name);
+                } else {
+                    suffix.push(game.i18n.localize(`bsh.origins.${origin.id}.name`));
+                }
 
                 if(background.unique) {
                     suffix.push(game.i18n.localize("bsh.fields.labels.unique"));
                 }
 
-                return(`<option ${selected}value="${background.key}">${game.i18n.localize(background.localeKeys.label)} (${suffix.join(', ')})</option>`);
+                return(`<option ${selected}value="${background.key}">${name} (${suffix.join(', ')})</option>`);
             }));
 
             return(`<select class="bsh-input bsh-select bsh-background-select" name="system.backgrounds.${originField}">${options.join("")}</select>`);
@@ -164,12 +171,19 @@ Hooks.once("init", function() {
             backgrounds.sort((lhs, rhs) => lhs.name.localeCompare(rhs.name)).map((background) => {
                 let origin   = origins.find((o) => background.origin === o.id);
                 let selected = (background.key === selectedKey ? 'selected="selected"' : '');
-                let suffix   = [game.i18n.localize(`bsh.origins.${origin.id}.name`)];
+                let suffix   = [];
+                let name     = (background.localeKeys ? game.i18n.localize(background.localeKeys.label) : background.name);
+
+                if(isCustomOriginsActive()) {
+                    suffix.push(origin.name);
+                } else {
+                    suffix.push(game.i18n.localize(`bsh.origins.${origin.id}.name`));
+                }
 
                 if(background.unique) {
                     suffix.push(game.i18n.localize("bsh.fields.labels.unique"));
                 }
-                options.push(`<option ${selected}value="${background.key}">${game.i18n.localize(background.localeKeys.label)} (${suffix.join(', ')})</option>`);
+                options.push(`<option ${selected}value="${background.key}">${name} (${suffix.join(', ')})</option>`);
             });
 
             template = `<select class="bsh-input bsh-select" name="system.backgrounds.${originField}">${options.join("")}</select>`;
@@ -186,7 +200,8 @@ Hooks.once("init", function() {
         }).sort((lhs, rhs) => lhs.name.localeCompare(rhs.name));
         let options = entries.map((entry) => {
             let selected = (entry.selected ? 'selected="selected"' : '');
-            return(`<option ${selected} value="${stringToKey(entry.name)}">${game.i18n.localize(`bsh.origins.${entry.id}.name`)}</option>`);
+            let name     = (isCustomOriginsActive() ? entry.name : game.i18n.localize(`bsh.origins.${entry.id}.name`));
+            return(`<option ${selected} value="${stringToKey(entry.name)}">${name}</option>`);
         });
 
         return(`<select class="bsh-input bsh-select" name="${fieldName}">${options.join("")}</select>`);

@@ -21,7 +21,11 @@ function getBackgrounds(firstOriginKey, ...otherOriginKeys) {
         (origin.system ? origin.system.backgrounds : origin.backgrounds).forEach((entry) => {
             let background = JSON.parse(entry);
 
-            background.origin = stringToKey(origin.name);
+            if(!isCustomOriginsActive()) {
+                background.origin = stringToKey(origin.name);
+            } else {
+                background.origin = origin.id;
+            }
             backgrounds.push(background);
         });
     });
@@ -51,9 +55,7 @@ function getOriginKeys() {
 }
 
 function getOrigins() {
-    let customOrigins = game.settings.get("black-sword-hack", "customOrigins");
-
-    if(customOrigins) {
+    if(isCustomOriginsActive()) {
         return(game.items.filter((item) => item.type === "origin"));
     } else {
         return(Object.values(CLASSIC_ORIGINS));
@@ -64,11 +66,16 @@ function getCustomOrigins() {
     return(game.items.filter((item) => item.type === "origin"));
 }
 
+function isCustomOriginsActive() {
+    return(game.settings.get("black-sword-hack", "customOrigins"));
+}
+
 export {
     generateBirthPlace,
     getBackgrounds,
     getCharacterBackgrounds,
 	getCustomOrigins,
     getOriginKeys,
-    getOrigins
+    getOrigins,
+    isCustomOriginsActive
 };
