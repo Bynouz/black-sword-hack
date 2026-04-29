@@ -702,3 +702,12 @@
 .editor-content {
 	height: 200px;
 }
+.bsh-roll-kept {
+    font-weight: bold;
+    color: #000;
+}
+
+.bsh-roll-dropped {
+    color: #aaa;
+    text-decoration: line-through;
+}
