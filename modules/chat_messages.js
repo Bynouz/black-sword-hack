@@ -68,6 +68,8 @@ export function logAttackRoll(actorId, weaponId, shiftKey=false, ctrlKey=false, 
                                     tested:   true};
 
                 data.roll.success = (!critical.failure && attributes[attribute] > data.roll.result);
+                data.roll.allResults = extractRollResults(roll);
+                data.roll.threshold  = attributes[attribute];
 
                 if(!critical.success && !critical.failure) {
                     data.roll.labels.result = interpolate(data.roll.success ? "bsh.messages.labels.hit" : "bsh.messages.labels.miss");
@@ -136,6 +138,8 @@ export function logAttributeTest(actor, attribute, shiftKey=false, ctrlKey=false
             critical.failure = (dieResult === 20);
             critical.success = (dieResult === 1);
         message.roll.result  = roll.total;
+        message.roll.allResults = extractRollResults(roll);
+        message.roll.threshold  = attributes[attribute];
         message.roll.success = (critical.success || roll.total < attributes[attribute]);
         if(message.roll.success) {
             if(critical.success) {
@@ -291,6 +295,7 @@ export function logDieRoll(actor, dieType, title, shiftKey=false, ctrlKey=false)
     }
     rollEm(new Roll(formula)).then((roll) => {
         message.roll.result = roll.total;
+            
         showMessage(actor, "systems/black-sword-hack/templates/messages/die-roll.hbs", message);
     });
 }
@@ -325,6 +330,8 @@ export function logDodgeRoll(actor, shiftKey=false, ctrlKey=false) {
             critical.failure = (dieResult === 20);
             critical.success = (dieResult === 1);
         message.roll.result  = roll.total;
+        message.roll.allResults = extractRollResults(roll);
+        message.roll.threshold  = attributes["dexterity"];
         message.roll.success = (critical.success || roll.total < attributes["dexterity"]);
 
         if(!critical.success && !critical.failure) {
@@ -414,6 +421,8 @@ export function logInitiativeRoll(event) {
                 critical.failure = (dieResult === 20);
                 critical.success = (dieResult === 1);
             message.roll.result  = roll.total;
+            message.roll.allResults = extractRollResults(roll);
+            message.roll.threshold  = attributes["wisdom"];    
             message.roll.success = (critical.success || roll.total < attributes["wisdom"]);
 
             if(!critical.success && !critical.failure) {
@@ -524,6 +533,8 @@ export function logParryRoll(actor, shiftKey=false, ctrlKey=false) {
             critical.failure = (dieResult === 20);
             critical.success = (dieResult === 1);
         message.roll.result  = roll.total;
+        message.roll.allResults = extractRollResults(roll);
+        message.roll.threshold  = attributes["strength"];    
         message.roll.success = (critical.success || roll.total < attributes["strength"]);
 
         if(!critical.success && !critical.failure) {
@@ -576,6 +587,8 @@ export function logPerceptionRoll(event) {
                 critical.failure = (dieResult === 20);
                 critical.success = (dieResult === 1);
             message.roll.result  = roll.total;
+            message.roll.allResults = extractRollResults(roll);
+            message.roll.threshold  = attributes["intelligence"];    
             message.roll.success = (critical.success || roll.total < attributes["intelligence"]);
 
             if(!critical.success && !critical.failure) {
