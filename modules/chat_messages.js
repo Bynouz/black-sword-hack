@@ -371,6 +371,7 @@ export function logDoomDieRoll(actor, shiftKey=false, ctrlKey=false) {
         rollDoom(actor, rollType).then((result) => {
             message.roll.formula = result.formula;
             message.roll.result  = result.result;
+            message.roll.allResults = result.allResults;
             message.roll.success = !result.downgraded;
             if(!message.roll.success) {
                 message.roll.labels.result = interpolate("bsh.fields.titles.failure");
