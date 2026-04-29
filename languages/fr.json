@@ -562,6 +562,7 @@
       }
     },
     "messages": {
+      "threshold": "Seuil"
       "attackHit": "C'est réussi.",
       "attackMiss": "C'est raté.",
       "attributeRollFailed": "Le test d'attribut de %NAME% a échoué pour %ATTRIBUTE%.",
