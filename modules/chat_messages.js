@@ -646,3 +646,35 @@ export function toggleAttributeTestDisplay(event) {
         }
     }
 }
+
+export async function logAttributeTestRoll({
+  actor,
+  label,
+  formula,
+  threshold
+}) {
+  const roll = await new Roll(formula).evaluate({ async: true });
+
+  const diceResults = roll.dice.flatMap(d =>
+    d.results.map(r => r.result)
+  );
+
+  const total = roll.total;
+  const success = total <= threshold;
+
+  return roll.toMessage({
+    speaker: ChatMessage.getSpeaker({ actor }),
+    flavor: label,
+    flags: {
+      bsh: {
+        rollType: "attribute",
+        label,
+        formula,
+        diceResults,
+        threshold,
+        total,
+        success
+      }
+    }
+  });
+}
