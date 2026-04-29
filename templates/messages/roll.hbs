@@ -1,33 +1,65 @@
-<div class="bsh-roll-title">
-    <strong>{{labels.title}}</strong>
+{{!--
+  Black Sword Hack
+  Template générique de jet
+  Compatible jets standards + jets enrichis (attributs)
+--}}
+
+{{#if flags.bsh.rollType}}
+
+<div class="bsh-roll-card">
+
+  <header class="bsh-roll-header">
+    <h3>{{flags.bsh.label}}</h3>
+  </header>
+
+  <div class="bsh-roll-body">
+
+    <div class="bsh-roll-row">
+      <span class="bsh-roll-label">Jet</span>
+      <span class="bsh-roll-value">{{flags.bsh.formula}}</span>
+    </div>
+
+    <div class="bsh-roll-row">
+      <span class="bsh-roll-label">Dés</span>
+      <span class="bsh-roll-value">
+        {{#each flags.bsh.diceResults}}
+          <span class="bsh-die">{{this}}</span>
+        {{/each}}
+      </span>
+    </div>
+
+    <div class="bsh-roll-row">
+      <span class="bsh-roll-label">Seuil</span>
+      <span class="bsh-roll-value">{{flags.bsh.threshold}}</span>
+    </div>
+
+    <div class="bsh-roll-row">
+      <span class="bsh-roll-label">Résultat</span>
+      <span class="bsh-roll-value">{{flags.bsh.total}}</span>
+    </div>
+
+  </div>
+
+  <footer class="bsh-roll-footer {{#if flags.bsh.success}}success{{else}}failure{{/if}}">
+    {{#if flags.bsh.success}}
+      Succès
+    {{else}}
+      Échec
+    {{/if}}
+  </footer>
+
 </div>
 
-{{#expanded}}
-<div class="bsh-roll-details">
-{{/expanded}}
-{{^expanded}}
-<div class="bsh-roll-details bsh-hidden">
-{{/expanded}}
-    <div class="bsh-roll-column">
-        <div class="bsh-roll-column-title">{{localize "bsh.messages.titles.formula"}}</div>
-        <div class="bsh-roll-column-content">{{formula}}</div>
-    </div>
-    <div class="bsh-roll-column">
-        <div class="bsh-roll-column-title">{{localize "bsh.messages.titles.roll"}}</div>
-        <div class="bsh-roll-column-content">{{result}}</div>
-    </div>
+{{else}}
+
+{{!-- =========================
+     COMPORTEMENT EXISTANT
+     ========================= --}}
+<div class="dice-roll">
+  <div class="dice-result">
+    <div class="dice-formula">{{formula}}</div>
+    <div class="dice-total">{{total}}</div>
+  </div>
 </div>
 
-{{#tested}}
-  {{#success}}
-<div class="bsh-roll-success">{{labels.result}}</div>
-  {{/success}}
-
-  {{^success}}
-<div class="bsh-roll-failure">{{labels.result}}</div>
-  {{/success}}
-{{/tested}}
-
-{{#additional.show}}
-<p class="bsh-dice-roll-additional">{{additional.message}}</p>
-{{/additional.show}}
+{{/if}}
