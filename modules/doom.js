@@ -34,6 +34,7 @@ export function rollDoom(actor, rollType="standard") {
         return(rollEm(dice).then((roll) => {
                     result.formula = roll.formula;
                     result.result  = roll.total;
+                    result.allResults = extractRollResults(roll);
                     if(roll.total < 3) {
                         let newDie = downgradeDie(actorData.doom);
 
