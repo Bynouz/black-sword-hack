@@ -545,6 +545,7 @@
       }
     },
     "messages":{
+      "threshold": "Threshold",
       "attackHit": "That's a hit.",
       "attackMiss": "That's a miss.",
       "attributeRollFailed": "%NAME% %ATTRIBUTE% attribute test failed.",
