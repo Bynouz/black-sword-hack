@@ -9,6 +9,20 @@ import {calculateAttributeValues,
         interpolate,
         rollEm,
         setObjectField} from './shared.js';
+function extractRollResults(roll) {
+    const results = [];
+    for (const term of roll.terms) {
+        if (term.results) {
+            for (const r of term.results) {
+                results.push({
+                    value: r.result,
+                    cssClass: r.active ? "bsh-roll-kept" : "bsh-roll-dropped"
+                });
+            }
+        }
+    }
+    return results.length > 1 ? results : null; // null si un seul dé (inutile de tout afficher)
+}
 
 export function logAttackRoll(actorId, weaponId, shiftKey=false, ctrlKey=false, expanded=false) {
     let actor  = game.actors.find((a) => a.id === actorId);
