@@ -558,7 +558,7 @@ export function onInfoIconClicked(event) {
  * and returns a promise that yields the roll once resolved.
  */
 export function rollEm(dice) {
-    return(dice.evaluate({async: true}).then((roll) => {
+    return(dice.evaluate().then((roll) => {
         if(game.dice3d) {
             game.dice3d.showForRoll(roll);
         }
