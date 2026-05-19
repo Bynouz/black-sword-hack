@@ -1,53 +1,71 @@
 import {stringToKey} from '../shared.js';
 
-const STARTING_OBJECT = {description: "",
-                         index:       -1,
-                         key:         "",
-                         name:        "",
-                         stats:      {charisma:     "+0",
-                                      constitution: "+0",
-                                      dexterity:    "+0",
-                                      intelligence: "+0",
-                                      strength:     "+0",
-                                      wisdom:       "+0"},
-                         unique:     false};
-
+const STARTING_OBJECT = {
+    description: "",
+    index:       -1,
+    key:         "",
+    name:        "",
+    stats:       {
+        charisma:     "+0",
+        constitution: "+0",
+        dexterity:    "+0",
+        intelligence: "+0",
+        strength:     "+0",
+        wisdom:       "+0"
+    },
+    unique: false
+};
 
 export default class BackgroundDialog extends FormApplication {
+
     static get defaultOptions() {
-        return(foundry.utils.mergeObject(super.defaultOptions,
-                                         {closeOnSubmit: false,
-                                          height:        550,
-                                          template:      "systems/black-sword-hack/templates/dialogs/background.html",
-                                          title:         "Background",
-                                          width:         575}));
+        return foundry.utils.mergeObject(super.defaultOptions, {
+            closeOnSubmit: false,
+            height:        550,
+            template:      "systems/black-sword-hack/templates/dialogs/background.html",
+            title:         "Background",
+            width:         575
+        });
     }
 
-	constructor(settings) {
-        let buttons = {save: {callback: () => this._saveBackground(),
-                              label: game.i18n.localize("bsh.buttons.save")}};
+    constructor(settings) {
+        let buttons = {
+            save: {
+                callback: () => this._saveBackground(),
+                label:    game.i18n.localize("bsh.buttons.save")
+            }
+        };
 
-        super(Object.assign(foundry.utils.mergeObject({},
-                                                      (settings.data.background || STARTING_OBJECT)),
-                                                      settings,
-                                                      {buttons: buttons}));
+        // V14 : foundry.utils.mergeObject au lieu du global mergeObject
+        super(
+            foundry.utils.mergeObject(
+                {},
+                foundry.utils.mergeObject(
+                    (settings.data.background || STARTING_OBJECT),
+                    settings
+                )
+            ),
+            {buttons: buttons}
+        );
         this._newOrigin = (settings.newOrigin === true);
         this._originId  = settings.originId;
-	}
+    }
 
     get background() {
         let object = this.object;
 
-        return({description: object.description,
-                index:       parseInt(object.index),
-                key:         object.key,
-                name:        object.name,
-                stats:       mergeObject({}, object.stats),
-                unique:      object.unique});
+        return {
+            description: object.description,
+            index:       parseInt(object.index),
+            key:         object.key,
+            name:        object.name,
+            stats:       foundry.utils.mergeObject({}, object.stats),
+            unique:      object.unique
+        };
     }
 
     get isNewOrigin() {
-        return(this._newOrigin);
+        return this._newOrigin;
     }
 
     get origin() {
@@ -56,14 +74,12 @@ export default class BackgroundDialog extends FormApplication {
         if(!origin) {
             throw(`Unable to locate an origin with the id '${this._originId}'.`);
         }
-
-        return(origin);
+        return origin;
     }
 
     get originId() {
-        return(this._originId);
+        return this._originId;
     }
-
 
     getData(options = {}) {
         return super.getData();
@@ -117,7 +133,7 @@ export default class BackgroundDialog extends FormApplication {
 
     _onNameChanged(event) {
         let button = this.form.querySelector('.save-button');
-        let field  = this.form.querySelector('input[name="name"]')
+        let field  = this.form.querySelector('input[name="name"]');
 
         button.disabled = (field.value.trim() === "");
     }
@@ -129,7 +145,6 @@ export default class BackgroundDialog extends FormApplication {
             this.close();
         });
     }
-
 
     _saveBackground() {
         let origin     = this.origin;
@@ -157,20 +172,24 @@ export default class BackgroundDialog extends FormApplication {
         let origin = game.items.find((a) => a.id === element.dataset.origin);
 
         if(origin) {
-            let settings = Object.assign({}, options);
-            let data     = {background:  background,
-                            description: options.description,
-                            originId:    origin.id};
+            let settings = foundry.utils.mergeObject({}, options);
+            let data     = {
+                background:  background,
+                description: options.description,
+                originId:    origin.id
+            };
 
             settings.data      = data;
             settings.newOrigin = false;
             settings.originId  = origin.id;
             settings.title     = game.i18n.localize(`bsh.dialogs.titles.background`);
-            return(renderTemplate("systems/black-sword-hack/templates/dialogs/background.html", data)
-                       .then((content) => {
-                                 settings.content = content;
-                                 return(new BackgroundDialog(settings));
-                             }));   
+            return renderTemplate(
+                "systems/black-sword-hack/templates/dialogs/background.html",
+                data
+            ).then((content) => {
+                settings.content = content;
+                return new BackgroundDialog(settings);
+            });
         } else {
             console.error(`Unable to locate origin id '${element.dataset.origin}'.`);
         }
@@ -180,19 +199,23 @@ export default class BackgroundDialog extends FormApplication {
         let origin = game.items.find((a) => a.id === element.dataset.origin);
 
         if(origin) {
-            let settings = Object.assign({}, options);
-            let data     = {description: options.description,
-                            originId: origin.id};
+            let settings = foundry.utils.mergeObject({}, options);
+            let data     = {
+                description: options.description,
+                originId:    origin.id
+            };
 
             settings.data      = data;
             settings.newOrigin = true;
             settings.originId  = origin.id;
             settings.title     = game.i18n.localize(`bsh.dialogs.titles.background`);
-            return(renderTemplate("systems/black-sword-hack/templates/dialogs/background.html", data)
-                       .then((content) => {
-                                 settings.content = content;
-                                 return(new BackgroundDialog(settings));
-                             }));   
+            return renderTemplate(
+                "systems/black-sword-hack/templates/dialogs/background.html",
+                data
+            ).then((content) => {
+                settings.content = content;
+                return new BackgroundDialog(settings);
+            });
         } else {
             console.error(`Unable to locate origin id '${element.dataset.origin}'.`);
         }
