@@ -9,20 +9,6 @@ import {calculateAttributeValues,
         interpolate,
         rollEm,
         setObjectField} from './shared.js';
-function extractRollResults(roll) {
-    const results = [];
-    for (const term of roll.terms) {
-        if (term.results) {
-            for (const r of term.results) {
-                results.push({
-                    value: r.result,
-                    cssClass: r.active ? "bsh-roll-kept" : "bsh-roll-dropped"
-                });
-            }
-        }
-    }
-    return results.length > 1 ? results : null; // null si un seul dé (inutile de tout afficher)
-}
 
 export function logAttackRoll(actorId, weaponId, shiftKey=false, ctrlKey=false, expanded=false) {
     let actor  = game.actors.find((a) => a.id === actorId);
@@ -36,7 +22,7 @@ export function logAttackRoll(actorId, weaponId, shiftKey=false, ctrlKey=false, 
             let attribute  = (weapon.system.type !== "ranged" ? "strength" : "dexterity");
             let critical   = {failure: false, success: false};
             let doomed     = (actor.system.doom === "exhausted");
-            let data       = {actor:    actor.name, 
+            let data       = {actor:    actor.name,
                               actorId:  actorId,
                               doomed:   doomed,
                               weapon:   weapon.name,
@@ -58,7 +44,7 @@ export function logAttackRoll(actorId, weaponId, shiftKey=false, ctrlKey=false, 
                 }
             }
             rollEm(dice).then((roll) => {
-                let dieResult = roll.terms[0].results[0].result;
+                let dieResult    = roll.terms[0].results[0].result;
                     critical.failure = (dieResult === 20);
                     critical.success = (dieResult === 1);
                 data.roll        = {expanded: expanded,
@@ -68,8 +54,6 @@ export function logAttackRoll(actorId, weaponId, shiftKey=false, ctrlKey=false, 
                                     tested:   true};
 
                 data.roll.success = (!critical.failure && attributes[attribute] > data.roll.result);
-                data.roll.allResults = extractRollResults(roll);
-                data.roll.threshold  = attributes[attribute];
 
                 if(!critical.success && !critical.failure) {
                     data.roll.labels.result = interpolate(data.roll.success ? "bsh.messages.labels.hit" : "bsh.messages.labels.miss");
@@ -84,7 +68,7 @@ export function logAttackRoll(actorId, weaponId, shiftKey=false, ctrlKey=false, 
                 }
 
                 if(data.roll.success) {
-                    data.damage = {actorId:  actor.id, 
+                    data.damage = {actorId:  actor.id,
                                    critical: critical.success,
                                    doomed:   doomed,
                                    formula:  generateDamageRollFormula(actor, weapon, {critical: critical.success, doomed: doomed}),
@@ -106,7 +90,7 @@ export function logAttributeTest(actor, attribute, shiftKey=false, ctrlKey=false
     let attributes = calculateAttributeValues(actor.system, BSHConfiguration);
     let critical   = {failure: false, success: true};
     let doomed     = (actor.system.doom === "exhausted");
-    let message    = {actor:    actor.name, 
+    let message    = {actor:    actor.name,
                       actorId:  actor.id,
                       roll:     {doomed:   doomed,
                                  expanded: expanded,
@@ -115,7 +99,6 @@ export function logAttributeTest(actor, attribute, shiftKey=false, ctrlKey=false
                                  result:   0,
                                  success:  false,
                                  tested:   true}};
-    let title      = game.i18n.localize(`bsh.fields.titles.dieRolls.attributes.${attribute}`)
 
     message.roll.labels.title = game.i18n.localize(`bsh.fields.titles.dieRolls.attributes.${attribute}`);
 
@@ -134,12 +117,10 @@ export function logAttributeTest(actor, attribute, shiftKey=false, ctrlKey=false
     }
 
     rollEm(new Roll(message.roll.formula)).then((roll) => {
-        let dieResult = roll.terms[0].results[0].result;
+        let dieResult        = roll.terms[0].results[0].result;
             critical.failure = (dieResult === 20);
             critical.success = (dieResult === 1);
         message.roll.result  = roll.total;
-        message.roll.allResults = extractRollResults(roll);
-        message.roll.threshold  = attributes[attribute];
         message.roll.success = (critical.success || roll.total < attributes[attribute]);
         if(message.roll.success) {
             if(critical.success) {
@@ -277,7 +258,7 @@ export function logDemonSummoningFailure(demon, result) {
 export function logDieRoll(actor, dieType, title, shiftKey=false, ctrlKey=false) {
     let doomed  = (actor.system.doom === "exhausted");
     let formula = (doomed ? `2${dieType}kl` : `1${dieType}`);
-    let message = {actor:    actor.name, 
+    let message = {actor:    actor.name,
                    actorId:  actor.id,
                    doomed:   doomed,
                    roll:     {expanded: true,
@@ -295,7 +276,6 @@ export function logDieRoll(actor, dieType, title, shiftKey=false, ctrlKey=false)
     }
     rollEm(new Roll(formula)).then((roll) => {
         message.roll.result = roll.total;
-            
         showMessage(actor, "systems/black-sword-hack/templates/messages/die-roll.hbs", message);
     });
 }
@@ -305,7 +285,7 @@ export function logDodgeRoll(actor, shiftKey=false, ctrlKey=false) {
     let critical   = {failure: false, success: false};
     let doomed     = (actor.system.doom === "exhausted");
     let title      = interpolate("bsh.messages.titles.dodgeRoll");
-    let message    = {actor:    actor.name, 
+    let message    = {actor:    actor.name,
                       actorId:  actor.id,
                       doomed:   doomed,
                       roll:     {expanded: false,
@@ -313,6 +293,7 @@ export function logDodgeRoll(actor, shiftKey=false, ctrlKey=false) {
                                  labels:   {title: title},
                                  result:   0,
                                  tested:   true}};
+    let shield     = (actor.system.armour && actor.system.armour.shield === "yes");
 
     if(!doomed) {
         if(shiftKey) {
@@ -326,12 +307,10 @@ export function logDodgeRoll(actor, shiftKey=false, ctrlKey=false) {
         message.roll.formula = (shiftKey || shield ? "1d20" : "2d20kh");
     }
     rollEm(new Roll(message.roll.formula)).then((roll) => {
-        let dieResult = roll.terms[0].results[0].result;
+        let dieResult        = roll.terms[0].results[0].result;
             critical.failure = (dieResult === 20);
             critical.success = (dieResult === 1);
         message.roll.result  = roll.total;
-        message.roll.allResults = extractRollResults(roll);
-        message.roll.threshold  = attributes["dexterity"];
         message.roll.success = (critical.success || roll.total < attributes["dexterity"]);
 
         if(!critical.success && !critical.failure) {
@@ -361,7 +340,6 @@ export function logDoomDieRoll(actor, shiftKey=false, ctrlKey=false) {
                                    result:   0,
                                    tested:   true}};
         let rollType = "standard";
-        let result   = null;
 
         if(shiftKey) {
             rollType = "advantage";
@@ -371,7 +349,6 @@ export function logDoomDieRoll(actor, shiftKey=false, ctrlKey=false) {
         rollDoom(actor, rollType).then((result) => {
             message.roll.formula = result.formula;
             message.roll.result  = result.result;
-            message.roll.allResults = result.allResults;
             message.roll.success = !result.downgraded;
             if(!message.roll.success) {
                 message.roll.labels.result = interpolate("bsh.fields.titles.failure");
@@ -397,7 +374,7 @@ export function logInitiativeRoll(event) {
         let critical   = {failure: false, success: false};
         let doomed     = (actor.system.doom === "exhausted");
         let title      = interpolate("bsh.messages.titles.initiativeRoll");
-        let message    = {actor:    actor.name, 
+        let message    = {actor:    actor.name,
                           actorId:  actor.id,
                           doomed:   doomed,
                           roll:     {expanded: false,
@@ -418,12 +395,10 @@ export function logInitiativeRoll(event) {
             message.roll.formula = (event.shiftKey ? "1d20" : "2d20kh");
         }
         rollEm(new Roll(message.roll.formula)).then((roll) => {
-            let dieResult = roll.terms[0].results[0].result;
+            let dieResult        = roll.terms[0].results[0].result;
                 critical.failure = (dieResult === 20);
                 critical.success = (dieResult === 1);
             message.roll.result  = roll.total;
-            message.roll.allResults = extractRollResults(roll);
-            message.roll.threshold  = attributes["wisdom"];    
             message.roll.success = (critical.success || roll.total < attributes["wisdom"]);
 
             if(!critical.success && !critical.failure) {
@@ -487,7 +462,7 @@ export function logItemUsageDieRoll(item, field, shiftKey=false, ctrlKey=false) 
                     }
                 } else {
                     message.roll.success       = true;
-                    message.roll.labels.result = interpolate("bsh.fields.titles.success");                
+                    message.roll.labels.result = interpolate("bsh.fields.titles.success");
                 }
 
                 showMessage(item.actor, "systems/black-sword-hack/templates/messages/usage-die-roll.hbs", message);
@@ -500,15 +475,15 @@ export function logItemUsageDieRoll(item, field, shiftKey=false, ctrlKey=false) 
         console.error(`Unable to locate the ${field} usage die setting for item id ${item.id} (${item.name}).`);
         ui.notifications.error(game.i18n.localize("bsh.errors.usageDie.notFound"));
     }
-
 }
 
 export function logParryRoll(actor, shiftKey=false, ctrlKey=false) {
-    let attributes = calculateAttributeValues(actor.data.data, BSHConfiguration);
+    // V14 : actor.system au lieu de actor.data.data
+    let attributes = calculateAttributeValues(actor.system, BSHConfiguration);
     let critical   = {failure: false, success: false};
     let doomed     = (actor.system.doom === "exhausted");
     let title      = interpolate("bsh.messages.titles.parryRoll");
-    let message    = {actor:    actor.name, 
+    let message    = {actor:    actor.name,
                       actorId:  actor.id,
                       doomed:   doomed,
                       roll:     {expanded: false,
@@ -516,7 +491,7 @@ export function logParryRoll(actor, shiftKey=false, ctrlKey=false) {
                                  labels:   {title: title},
                                  result:   0,
                                  tested:   true}};
-    let shield     = (actor.system.armour.shield === "yes");
+    let shield     = (actor.system.armour && actor.system.armour.shield === "yes");
 
     if(!doomed) {
         if(ctrlKey && !shield) {
@@ -530,12 +505,10 @@ export function logParryRoll(actor, shiftKey=false, ctrlKey=false) {
         message.roll.formula = (shiftKey || shield ? "1d20" : "2d20kh");
     }
     rollEm(new Roll(message.roll.formula)).then((roll) => {
-        let dieResult = roll.terms[0].results[0].result;
+        let dieResult        = roll.terms[0].results[0].result;
             critical.failure = (dieResult === 20);
             critical.success = (dieResult === 1);
         message.roll.result  = roll.total;
-        message.roll.allResults = extractRollResults(roll);
-        message.roll.threshold  = attributes["strength"];    
         message.roll.success = (critical.success || roll.total < attributes["strength"]);
 
         if(!critical.success && !critical.failure) {
@@ -563,7 +536,7 @@ export function logPerceptionRoll(event) {
         let critical   = {failure: false, success: false};
         let doomed     = (actor.system.doom === "exhausted");
         let title      = interpolate("bsh.messages.titles.perceptionRoll");
-        let message    = {actor:    actor.name, 
+        let message    = {actor:    actor.name,
                           actorId:  actor.id,
                           doomed:   doomed,
                           roll:     {expanded: false,
@@ -584,12 +557,10 @@ export function logPerceptionRoll(event) {
             message.roll.formula = (event.shiftKey ? "1d20" : "2d20kh");
         }
         rollEm(new Roll(message.roll.formula)).then((roll) => {
-            let dieResult = roll.terms[0].results[0].result;
+            let dieResult        = roll.terms[0].results[0].result;
                 critical.failure = (dieResult === 20);
                 critical.success = (dieResult === 1);
             message.roll.result  = roll.total;
-            message.roll.allResults = extractRollResults(roll);
-            message.roll.threshold  = attributes["intelligence"];    
             message.roll.success = (critical.success || roll.total < attributes["intelligence"]);
 
             if(!critical.success && !critical.failure) {
@@ -632,7 +603,7 @@ export function logSpellCastFailure(spell, result) {
     let actor   = spell.actor;
     let message = {actor:   actor.name,
                    actorId: actor.id,
-                   spell:  spell.name,
+                   spell:   spell.name,
                    doomed:  result.doomed,
                    fumble:  (result.total === 20),
                    roll:    {expanded: false,
@@ -649,7 +620,7 @@ export function logSpellCastFailure(spell, result) {
 export function showMessage(actor, templateKey, data) {
     getTemplate(templateKey)
         .then((template) => {
-            let message = {speaker: ChatMessage.getSpeaker(actor=actor),
+            let message = {speaker: ChatMessage.getSpeaker({actor: actor}),
                            user:    game.user};
 
             message.content = template(data);
@@ -675,34 +646,26 @@ export function toggleAttributeTestDisplay(event) {
     }
 }
 
-export async function logAttributeTestRoll({
-  actor,
-  label,
-  formula,
-  threshold
-}) {
-  const roll = await new Roll(formula).evaluate({ async: true });
+export async function logAttributeTestRoll({actor, label, formula, threshold}) {
+    const roll = await new Roll(formula).evaluate({async: true});
 
-  const diceResults = roll.dice.flatMap(d =>
-    d.results.map(r => r.result)
-  );
+    const diceResults = roll.dice.flatMap(d => d.results.map(r => r.result));
+    const total   = roll.total;
+    const success = total <= threshold;
 
-  const total = roll.total;
-  const success = total <= threshold;
-
-  return roll.toMessage({
-    speaker: ChatMessage.getSpeaker({ actor }),
-    flavor: label,
-    flags: {
-      bsh: {
-        rollType: "attribute",
-        label,
-        formula,
-        diceResults,
-        threshold,
-        total,
-        success
-      }
-    }
-  });
+    return roll.toMessage({
+        speaker: ChatMessage.getSpeaker({actor}),
+        flavor: label,
+        flags: {
+            bsh: {
+                rollType:    "attribute",
+                label,
+                formula,
+                diceResults,
+                threshold,
+                total,
+                success
+            }
+        }
+    });
 }
