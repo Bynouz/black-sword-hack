@@ -64,28 +64,30 @@ Hooks.once("init", function() {
     CONFIG.configuration        = BSHConfiguration;
     CONFIG.Item.documentClass   = BSHItem;
 
-    game.settings.register("black-sword-hack", "customOrigins", {config:  true,
-                                                                 default: false,
-                                                                 hint:    game.i18n.localize("bsh.settings.options.customOrigins.blurb"),
-                                                                 name:    game.i18n.localize("bsh.settings.options.customOrigins.title"),
-                                                                 scope:   "world",
-                                                                 type:    Boolean});
+    game.settings.register("black-sword-hack", "customOrigins", {
+        config:  true,
+        default: false,
+        hint:    game.i18n.localize("bsh.settings.options.customOrigins.blurb"),
+        name:    game.i18n.localize("bsh.settings.options.customOrigins.title"),
+        scope:   "world",
+        type:    Boolean
+    });
 
-    Items.unregisterSheet("core", ItemSheet);
-    Items.registerSheet("black-sword-hack", ConsumableSheet, {types: ["consumable"]});
-    Items.registerSheet("black-sword-hack", CreatureActionSheet, {types: ["creature_action"]});
-    Items.registerSheet("black-sword-hack", DemonSheet, {types: ["demon"]});
-    Items.registerSheet("black-sword-hack", EquipmentSheet, {types: ["equipment"]});
-    Items.registerSheet("black-sword-hack", GiftSheet, {types: ["gift"]});
-    Items.registerSheet("black-sword-hack", OriginSheet, {types: ["origin"]});
-    Items.registerSheet("black-sword-hack", SpellSheet, {types: ["spell"]});
-    Items.registerSheet("black-sword-hack", SpiritSheet, {types: ["spirit"]});
-    Items.registerSheet("black-sword-hack", WeaponSheet, {types: ["weapon"]});
+    // V14 : utilisation de DocumentSheetConfig à la place de Items/Actors.registerSheet
+    DocumentSheetConfig.unregisterSheet(Item, "core", ItemSheet);
+    DocumentSheetConfig.registerSheet(Item, "black-sword-hack", ConsumableSheet,      {makeDefault: true, types: ["consumable"]});
+    DocumentSheetConfig.registerSheet(Item, "black-sword-hack", CreatureActionSheet,  {makeDefault: true, types: ["creature_action"]});
+    DocumentSheetConfig.registerSheet(Item, "black-sword-hack", DemonSheet,           {makeDefault: true, types: ["demon"]});
+    DocumentSheetConfig.registerSheet(Item, "black-sword-hack", EquipmentSheet,       {makeDefault: true, types: ["equipment"]});
+    DocumentSheetConfig.registerSheet(Item, "black-sword-hack", GiftSheet,            {makeDefault: true, types: ["gift"]});
+    DocumentSheetConfig.registerSheet(Item, "black-sword-hack", OriginSheet,          {makeDefault: true, types: ["origin"]});
+    DocumentSheetConfig.registerSheet(Item, "black-sword-hack", SpellSheet,           {makeDefault: true, types: ["spell"]});
+    DocumentSheetConfig.registerSheet(Item, "black-sword-hack", SpiritSheet,          {makeDefault: true, types: ["spirit"]});
+    DocumentSheetConfig.registerSheet(Item, "black-sword-hack", WeaponSheet,          {makeDefault: true, types: ["weapon"]});
 
-    Actors.unregisterSheet("core", ActorSheet);
-    Actors.registerSheet("black-sword-hack", CharacterSheet, {makeDefault: true, types: ["character"]});
-    Actors.registerSheet("black-sword-hack", CreatureSheet, {makeDefault: true, types: ["creature"]});
-    // Actors.registerSheet("bh2e", BH2eCreatureSheet, {makeDefault: true, types: ["creature"]});
+    DocumentSheetConfig.unregisterSheet(Actor, "core", ActorSheet);
+    DocumentSheetConfig.registerSheet(Actor, "black-sword-hack", CharacterSheet, {makeDefault: true, types: ["character"]});
+    DocumentSheetConfig.registerSheet(Actor, "black-sword-hack", CreatureSheet,  {makeDefault: true, types: ["creature"]});
 
     // Load templates.
     preloadHandlebarsTemplates();
@@ -95,21 +97,21 @@ Hooks.once("init", function() {
     });
 
     Handlebars.registerHelper("backgroundSelect", function(offset, options) {
-    	let backgrounds = {"": ""};
-    	let labelKey    = `bsh.fields.labels.${offset}Background`;
-    	let context     = {field:    `../data.backgrounds.${offset}`,
+        let backgrounds = {"": ""};
+        let labelKey    = `bsh.fields.labels.${offset}Background`;
+        let context     = {field:    `../data.backgrounds.${offset}`,
                            labelKey: labelKey,
                            options:  backgrounds};
 
         for(var key in BSHConfiguration.backgroundList) {
             if(options.hash.fromOrigin) {
-            	if(BSHConfiguration.backgroundList[key].origin === this.actor.system.origin) {
-            		backgrounds[key] = BSHConfiguration.backgroundList[key].name;
-            	}
+                if(BSHConfiguration.backgroundList[key].origin === this.actor.system.origin) {
+                    backgrounds[key] = BSHConfiguration.backgroundList[key].name;
+                }
             } else {
                 backgrounds[key] = BSHConfiguration.backgroundList[key].name;
             }
-        }        
+        }
 
         return(options.fn(context));
     });
@@ -127,12 +129,11 @@ Hooks.once("init", function() {
     });
 
     Handlebars.registerHelper("originBackgroundSelect", (originId, originField, selectedKey) => {
-        let origin   = getOrigins(originId).find((o) => stringToKey(o.name) === originId);
+        let origin   = getOrigins().find((o) => stringToKey(o.name) === originId);
         let template = "<div>NO BACKGROUND OPTIONS AVAILABLE.</div>";
 
         if(origin) {
-            let backgrounds = (origin.system ? origin.system.backgrounds : origin.backgrounds);
-            let options     =  [`<option value=""></option>`];
+            let options = [`<option value=""></option>`];
             options = options.concat(getBackgrounds(originId).map((background) => {
                 let selected = (background.key === selectedKey ? 'selected="selected"' : "");
                 let suffix   = [];
