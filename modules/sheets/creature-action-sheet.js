@@ -1,38 +1,28 @@
 export default class CreatureActionSheet extends ItemSheet {
+
     static get defaultOptions() {
-        return(foundry.utils.mergeObject(super.defaultOptions,
-                                         {classes: ["bsh", "bsh-sheet", "bsh-creature-action"],
-                                          height: 375,
-                                          width: 750}));
+        return foundry.utils.mergeObject(super.defaultOptions, {
+            classes:  ["bsh", "bsh-sheet", "bsh-creature-action", "sheet"],
+            height:   375,
+            width:    750,
+            template: "systems/black-sword-hack/templates/sheets/creature-action-sheet.html"
+        });
     }
 
     get template() {
-        return("systems/black-sword-hack/templates/sheets/creature-action-sheet.html");
+        return "systems/black-sword-hack/templates/sheets/creature-action-sheet.html";
     }
 
+    // V14 : getData() retourne item et item.system directement
     getData() {
-        let data = super.getData();
-
-        data.configuration = CONFIG.configuration;
-        return(data);
+        const context         = super.getData();
+        context.configuration = CONFIG.configuration;
+        context.item          = this.item;
+        context.system        = this.item.system;
+        return context;
     }
 
     activateListeners(html) {
-        // html.find('.bsh-attribute-selector').on("change", (e) => this._onAttributeSelectionChange(e, html));
         super.activateListeners(html);
-    }
-
-    _onAttributeSelectionChange(event, html) {
-        let field = html[0].querySelector('input[name="system.attributes"]');
-        let selected = html[0].querySelectorAll(".bsh-attribute-selector:checked");
-
-        if(selected.length > 0) {
-            let names = [];
-
-            selected.forEach((checkbox) => names.push(checkbox.value));
-            field.value = names.join(",");
-        } else {
-            field.value = "none";
-        }
     }
 }
